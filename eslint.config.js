@@ -1,5 +1,6 @@
 // eslint.config.js
 import { tanstackConfig } from '@tanstack/eslint-config'
+import prettierConfig from 'eslint-config-prettier'
 /** @type {import('eslint').Linter.FlatConfig[]} */
 const customConfig = [
   ...tanstackConfig,
@@ -30,6 +31,7 @@ const customConfig = [
       ],
     },
   },
+  prettierConfig,
 ]
 
 export default customConfig

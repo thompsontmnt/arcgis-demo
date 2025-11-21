@@ -25,6 +25,9 @@ export function useAddressSearch(
     setSuppressSuggestions(false)
   }
 
+  //
+  // AUTOCOMPLETE SUGGESTIONS
+  //
   useEffect(() => {
     if (suppressSuggestions) {
       setSuggestions([])
@@ -38,21 +41,27 @@ export function useAddressSearch(
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
     debounceRef.current = setTimeout(async () => {
+      // cancel prior fetch
       abortRef.current?.abort()
       abortRef.current = new AbortController()
 
+      const savedQuery = query
+
       try {
         const results = await locator.suggestLocations(GEOCODER_URL, {
-          text: query,
+          text: savedQuery,
           maxSuggestions: 5,
           signal: abortRef.current.signal,
         } as any)
+
+        // avoid race conditions
+        if (savedQuery !== query) return
 
         setSuggestions(
           results
             .filter((s: any) => typeof s.text === 'string' && !!s.text)
             .map((s: any) => ({
-              text: s.text as string,
+              text: s.text,
               magicKey: s.magicKey,
             })),
         )
@@ -69,10 +78,16 @@ export function useAddressSearch(
     }
   }, [query, suppressSuggestions])
 
+  //
+  // USER SELECTS A SUGGESTION
+  //
   const selectSuggestion = useCallback(
     async (sug: Suggestion) => {
+      abortRef.current?.abort() // ← important fix
+
       setQuery(sug.text)
       setSuppressSuggestions(true)
+      setSuggestions([])
       setLoading(true)
 
       try {
@@ -94,11 +109,17 @@ export function useAddressSearch(
     [onResult],
   )
 
+  //
+  // USER PRESSES ENTER OR CLICKS GO
+  //
   const submit = useCallback(async () => {
     if (!query.trim()) return
 
+    abortRef.current?.abort() // ← avoid background suggestion finishing
+
     setLoading(true)
     setSuggestions([])
+    setSuppressSuggestions(true) // ← hides suggestions until typing again
 
     try {
       const results = await locator.addressToLocations(GEOCODER_URL, {

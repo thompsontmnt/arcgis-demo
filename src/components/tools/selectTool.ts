@@ -1,37 +1,55 @@
-export const selectTool = (view: __esri.MapView) => {
-  console.log('SELECT TOOL ACTIVE')
+import { jotaiStore } from '@/jotai/jotaiStore'
 
-  // Click handler
-  const clickHandle = view.on('click', async (event) => {
-    const hit = await view.hitTest(event)
+import {
+  graphicsLayerAtom,
+  selectedGraphicsAtom,
+  sketchVMAtom,
+} from '../map/atoms'
 
-    const isGraphicHit = (r: any): r is __esri.MapViewGraphicHit =>
-      r.type === 'graphic' && !!r.graphic
-    const g = hit.results.find(isGraphicHit)?.graphic
+import type MapView from '@arcgis/core/views/MapView'
 
-    if (!g) {
-      console.log('No graphic selected')
-      return
-    }
+export function selectTool() {
+  let clickHandle: IHandle | null = null
 
-    // Highlighting
-    view.graphics.removeMany(
-      view.graphics.filter((gr) => gr.attributes?.__selected),
-    )
+  return {
+    id: 'select',
+    label: 'Select',
+    icon: 'cursor',
 
-    g.attributes = { ...(g.attributes ?? {}), __selected: true }
+    activate(view: MapView) {
+      clickHandle?.remove()
 
-    g.symbol = {
-      type: 'simple-fill',
-      color: [0, 0, 0, 0],
-      outline: { color: 'cyan', width: 3 },
-    } as any
+      const sketch = jotaiStore.get(sketchVMAtom)
+      if (sketch) {
+        sketch.cancel()
+      }
 
-    console.log('Selected graphic:', g)
-  })
+      clickHandle = view.on('click', async (event) => {
+        const layer = jotaiStore.get(graphicsLayerAtom)
 
-  return () => {
-    console.log('SELECT TOOL CLEANUP')
-    clickHandle.remove()
+        if (!layer) {
+          console.warn('[selectTool] No graphicsLayer found')
+          return
+        }
+
+        const hit = await view.hitTest(event)
+
+        const match = hit.results.find(
+          (r): r is __esri.MapViewGraphicHit =>
+            'graphic' in r && r.graphic.layer?.id === layer.id,
+        )
+
+        if (match?.graphic) {
+          jotaiStore.set(selectedGraphicsAtom, [match.graphic])
+        } else {
+          jotaiStore.set(selectedGraphicsAtom, [])
+        }
+      })
+    },
+
+    deactivate() {
+      clickHandle?.remove()
+      clickHandle = null
+    },
   }
 }

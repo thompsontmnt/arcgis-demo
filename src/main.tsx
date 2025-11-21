@@ -1,11 +1,13 @@
 import { Theme } from '@radix-ui/themes'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { Provider as JotaiProvider } from 'jotai'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 
+import { jotaiStore } from './jotai/jotaiStore.ts'
+import reportWebVitals from './reportWebVitals.ts'
 import { routeTree } from './routeTree.gen'
 import './styles.css'
-import reportWebVitals from './reportWebVitals.ts'
 import '@radix-ui/themes/styles.css'
 
 // Create a new router instance
@@ -32,7 +34,9 @@ if (rootElement && !rootElement.innerHTML) {
   root.render(
     <Theme appearance="dark" grayColor="slate">
       <StrictMode>
-        <RouterProvider router={router} />
+        <JotaiProvider store={jotaiStore}>
+          <RouterProvider router={router} />
+        </JotaiProvider>
       </StrictMode>
     </Theme>,
   )

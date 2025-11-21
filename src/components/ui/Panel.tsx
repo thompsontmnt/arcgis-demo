@@ -11,7 +11,7 @@ export function Panel({ children, className }: PanelProps) {
     <Card
       className={cn(
         'p-3 shadow-lg border rounded-lg bg-[--color-overlay] backdrop-blur',
-        'absolute top-4 left-4 z-50 w-[360px]',
+        'z-50 w-[360px]',
         className,
       )}
     >
