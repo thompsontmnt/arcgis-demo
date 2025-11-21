@@ -1,40 +1,40 @@
-import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer'
-import SketchViewModel from '@arcgis/core/widgets/Sketch/SketchViewModel'
+import { jotaiStore } from '@/jotai/jotaiStore'
 
-export const drawPolygonTool = (view: __esri.MapView) => {
-  console.log('DRAW POLYGON TOOL ACTIVE')
+import { graphicsLayerAtom, sketchVMAtom } from '../map/atoms'
 
-  const graphicsLayer = new GraphicsLayer()
-  const sketch = new SketchViewModel({
-    view,
-    layer: graphicsLayer,
-    defaultUpdateOptions: {
-      tool: 'reshape',
-      toggleToolOnClick: false,
+export function drawPolygonTool() {
+  let createHandle: IHandle | null = null
+
+  return {
+    id: 'draw-polygon',
+    label: 'Draw Polygon',
+    icon: 'pen-square',
+
+    activate() {
+      const sketch = jotaiStore.get(sketchVMAtom)
+      const layer = jotaiStore.get(graphicsLayerAtom)
+
+      if (!sketch || !layer) {
+        console.warn('[drawPolygonTool] Missing sketchVM or graphicsLayer')
+        return
+      }
+
+      createHandle?.remove()
+
+      sketch.create('polygon')
+
+      createHandle = sketch.on('create', (e) => {
+        if (e.state === 'complete') {
+        }
+      })
     },
-    polygonSymbol: {
-      type: 'simple-fill',
-      color: [255, 255, 255, 0.2],
-      outline: {
-        color: '#ff6600',
-        width: 2,
-      },
+
+    deactivate() {
+      createHandle?.remove()
+      createHandle = null
+
+      const sketch = jotaiStore.get(sketchVMAtom)
+      sketch?.cancel()
     },
-  })
-
-  sketch.create('polygon')
-
-  // Just log completed polygons
-  const completeHandle = sketch.on('create', (e) => {
-    if (e.state === 'complete') {
-      console.log('Polygon created:', e.graphic)
-    }
-  })
-
-  return () => {
-    console.log('DRAW POLYGON TOOL CLEANUP')
-
-    completeHandle.remove()
-    sketch.destroy()
   }
 }

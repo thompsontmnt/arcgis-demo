@@ -2,8 +2,15 @@ import { drawPolygonTool } from './drawPolygonTool'
 import { pointTool } from './pointTool'
 import { selectTool } from './selectTool'
 
-export type ToolInitializer = (view: __esri.MapView) => (() => void) | void
+import type MapView from '@arcgis/core/views/MapView'
 
+export type Tool = {
+  id: string
+  activate: (view: MapView) => void
+  deactivate: () => void
+}
+
+export type ToolInitializer = (view: MapView) => Tool
 export const defaultTools = {
   'draw-point': pointTool,
   'draw-polygon': drawPolygonTool,

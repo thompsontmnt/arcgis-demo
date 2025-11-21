@@ -1,11 +1,9 @@
+import { useAtomValue } from 'jotai'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 
+import { viewAtom, viewReadyAtom } from '@/components/map/atoms'
 import { defaultTools } from '@/components/tools'
 import type { ToolInitializer } from '@/components/tools'
-
-import { useMap } from './MapContext'
-
-import type { ReactNode } from 'react'
 
 type ToolRegistry = Record<string, ToolInitializer>
 
@@ -17,27 +15,42 @@ type ToolManagerContextType = {
 
 const ToolManagerContext = createContext<ToolManagerContextType | null>(null)
 
-export function ToolProvider({ children }: { children: ReactNode }) {
+export const ToolManagerProvider = ({
+  children,
+}: {
+  children: React.ReactNode
+}) => {
   const [activeTool, setActiveTool] = useState('select')
   const registryRef = useRef<ToolRegistry>({})
-  const { viewRef } = useMap()
+  const currentToolRef = useRef<{ deactivate: () => void } | null>(null)
 
-  function registerTool(name: string, init: ToolInitializer) {
+  const view = useAtomValue(viewAtom)
+  const viewReady = useAtomValue(viewReadyAtom)
+
+  const registerTool = (name: string, init: ToolInitializer) => {
     registryRef.current[name] = init
   }
 
   useEffect(() => {
-    const view = viewRef.current
     if (!view) return
 
-    const tool =
+    // clean up previous tool
+    currentToolRef.current?.deactivate()
+
+    const initializer =
       registryRef.current[activeTool] ??
       defaultTools[activeTool as keyof typeof defaultTools]
-    if (!tool) return
 
-    const cleanup = tool(view)
-    return () => cleanup?.()
-  }, [activeTool, viewRef])
+    const tool = initializer(view)
+    tool.activate(view)
+
+    currentToolRef.current = tool
+
+    return () => {
+      tool.deactivate()
+    }
+  }, [activeTool, viewReady])
+
   return (
     <ToolManagerContext.Provider
       value={{ activeTool, setActiveTool, registerTool }}

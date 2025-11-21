@@ -1,8 +1,8 @@
 import Graphic from '@arcgis/core/Graphic'
 
-export const pointTool = (view: __esri.MapView) => {
-  console.log('POINT TOOL ACTIVE')
+import type MapView from '@arcgis/core/views/MapView'
 
+export const pointTool = (view: MapView) => {
   const handler = view.on('click', (e) => {
     const g = new Graphic({
       geometry: e.mapPoint,
@@ -16,7 +16,6 @@ export const pointTool = (view: __esri.MapView) => {
   })
 
   return () => {
-    console.log('POINT TOOL CLEANUP')
     handler.remove()
   }
 }

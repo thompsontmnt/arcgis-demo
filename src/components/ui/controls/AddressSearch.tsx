@@ -3,15 +3,12 @@ import { useMemo } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useMap } from '@/context/MapContext'
 import { useAddressSearch } from '@/hooks/useAddressSearch'
 import { goToPoint } from '@/utils/goToPoint'
 
 import { Panel } from '../Panel'
 
 export default function AddressSearch() {
-  const { whenReady } = useMap()
-
   const {
     query,
     onQueryChange,
@@ -22,9 +19,8 @@ export default function AddressSearch() {
   } = useAddressSearch(async (result) => {
     if (!result.location) return
 
-    const view = await whenReady()
     try {
-      await goToPoint(view, result.location)
+      await goToPoint(result.location) // now uses global view atom
     } catch (err) {
       console.error('GO TO ERROR:', err)
     }
