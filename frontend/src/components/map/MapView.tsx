@@ -1,23 +1,23 @@
 import SketchViewModel from '@arcgis/core/widgets/Sketch/SketchViewModel'
 import { Box } from '@radix-ui/themes'
+import { useQuery } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import '@arcgis/map-components/components/arcgis-map'
 import '@arcgis/map-components/components/arcgis-placement'
 import '@arcgis/map-components'
 
+import { listGeometriesGeometryGetOptions } from '@/api/client/@tanstack/react-query.gen'
+import { useGraphicsLayer } from '@/hooks/useGraphicsLayer'
+
 import { graphicsLayerAtom, sketchVMAtom, viewAtom } from './atoms'
 import { GraphicInfoPanel } from './GraphicInfoPanel'
 import Toolbar from './Toolbar'
+import { convertFeatureToGraphic } from './utils/convertFeatureToGraphic'
+import { simpleFillSymbol } from './utils/symbols'
 import AddressSearch from '../ui/controls/AddressSearch'
 
 import type { ArcgisMapCustomEvent } from '@arcgis/map-components'
-import { listGeometriesGeometryGetOptions } from '@/api/client/@tanstack/react-query.gen'
-import { useQuery } from '@tanstack/react-query'
-import { convertFeatureToGraphic } from './utils/convertFeatureToGraphic'
-import { useGraphicsLayer } from '@/hooks/useGraphicsLayer'
-import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol'
-import Color from '@arcgis/core/Color'
 
 export default function MapView() {
   const setViewAtom = useSetAtom(viewAtom)
@@ -26,26 +26,17 @@ export default function MapView() {
 
   const { data: geometries } = useQuery(listGeometriesGeometryGetOptions())
 
-  const simpleFillSymbol = new SimpleFillSymbol({
-    color: new Color([51, 102, 204, 0.3]),
-    outline: {
-      type: 'simple-line',
-      color: new Color([51, 102, 204, 1]),
-      width: 2,
-    },
-    style: 'solid',
-  })
-
-  const graphics = Array.isArray(geometries)
-    ? geometries.map((geom) =>
-        convertFeatureToGraphic({
-          id: geom.id?.toString(),
-          geometry: geom.wkt,
-          attributes: { label: geom.label },
-          symbol: simpleFillSymbol,
-        }),
-      )
-    : []
+  const graphics = useMemo(() => {
+    if (!Array.isArray(geometries)) return []
+    return geometries.map(({ id, wkt, label }) =>
+      convertFeatureToGraphic({
+        id: id.toString(),
+        geometry: wkt,
+        attributes: { label },
+        symbol: simpleFillSymbol,
+      }),
+    )
+  }, [geometries])
 
   const { layer } = useGraphicsLayer({
     view: null,

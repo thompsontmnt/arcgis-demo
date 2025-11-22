@@ -62,7 +62,7 @@ export interface Config {
         | string
         | number
         | boolean
-        | (string | number | boolean)[]
+        | Array<string | number | boolean>
         | null
         | undefined
         | unknown

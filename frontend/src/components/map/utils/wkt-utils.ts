@@ -29,9 +29,12 @@ export function arcgisToWkt(geometry: Geometry): string {
 export function wktToArcGIS(wkt: string): Geometry {
   if (!wkt) throw new Error('wktToArcGIS: Missing WKT')
 
-  // WKT → GeoJSON
+  // 1. WKT → GeoJSON
   const geojson = wktToGeoJSON(wkt)
 
-  // GeoJSON → ArcGIS
-  return geojsonToArcGIS(geojson) as Geometry
+  // 2. GeoJSON → ArcGIS (still in 4326!)
+  const geom4326 = geojsonToArcGIS(geojson) as Geometry
+
+  // 3. Project to WebMercator (3857) for MapView rendering
+  return projection.project(geom4326, { wkid: 3857 }) as Geometry
 }

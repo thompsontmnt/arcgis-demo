@@ -12,7 +12,6 @@ import {
 
 import { createModeAtom, draftGraphicAtom } from './atoms'
 import { arcgisToWkt } from './utils/wkt-utils'
-import { Panel } from '../ui/Panel'
 
 import type Graphic from '@arcgis/core/Graphic'
 
@@ -67,38 +66,36 @@ export function CreateGraphicForm({ graphic }: CreateGraphicFormProps) {
 
   return (
     <Box>
-      <Panel>
-        <Text size="4" weight="bold">
-          Create Geometry
-        </Text>
+      <Text size="4" weight="bold">
+        Create Geometry
+      </Text>
 
-        <TextField.Root
-          value={label}
-          placeholder="Label"
-          onChange={(e) => setLabel(e.target.value)}
-          mt="3"
-        />
+      <TextField.Root
+        value={label}
+        placeholder="Label"
+        onChange={(e) => setLabel(e.target.value)}
+        mt="3"
+      />
 
-        <Box mt="3">
-          <Button
-            onClick={handleSave}
-            disabled={!label || createGeometry.isPending}
-          >
-            {createGeometry.isPending ? 'Saving…' : 'Save'}
-          </Button>
+      <Box mt="3">
+        <Button
+          onClick={handleSave}
+          disabled={!label || createGeometry.isPending}
+        >
+          {createGeometry.isPending ? 'Saving…' : 'Save'}
+        </Button>
 
-          <Button
-            variant="soft"
-            ml="2"
-            onClick={() => {
-              setDraft(null)
-              setCreateMode(false)
-            }}
-          >
-            Cancel
-          </Button>
-        </Box>
-      </Panel>
+        <Button
+          variant="soft"
+          ml="2"
+          onClick={() => {
+            setDraft(null)
+            setCreateMode(false)
+          }}
+        >
+          Cancel
+        </Button>
+      </Box>
     </Box>
   )
 }

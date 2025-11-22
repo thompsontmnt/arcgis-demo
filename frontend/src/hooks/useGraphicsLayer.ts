@@ -1,14 +1,15 @@
-import Graphic from '@arcgis/core/Graphic'
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer'
-import MapView from '@arcgis/core/views/MapView'
-import SceneView from '@arcgis/core/views/SceneView'
 import { useEffect, useRef } from 'react'
+
+import type Graphic from '@arcgis/core/Graphic'
+import type MapView from '@arcgis/core/views/MapView'
+import type SceneView from '@arcgis/core/views/SceneView'
 
 export interface UseGraphicsLayerOptions {
   view: MapView | SceneView | null
   id: string
   title: string
-  graphics: Graphic[]
+  graphics: Array<Graphic>
 }
 
 export interface UseGraphicsLayerResult {
@@ -37,7 +38,7 @@ export function useGraphicsLayer({
   // Populate graphics
   useEffect(() => {
     layer.removeAll()
-    if (graphics?.length) layer.addMany(graphics)
+    if (graphics.length) layer.addMany(graphics)
   }, [graphics, layer])
 
   return {

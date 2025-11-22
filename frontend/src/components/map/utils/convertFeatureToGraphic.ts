@@ -1,8 +1,8 @@
-import type { Geometry } from '@arcgis/core/geometry'
-import * as jsonUtils from '@arcgis/core/geometry/support/jsonUtils.js'
 import Graphic from '@arcgis/core/Graphic'
-import { geojsonToArcGIS } from '@terraformer/arcgis'
-import { wktToGeoJSON } from '@terraformer/wkt'
+
+import { wktToArcGIS } from './wkt-utils'
+
+import type { Geometry } from '@arcgis/core/geometry'
 
 type WktString = string
 
@@ -24,10 +24,7 @@ export function convertFeatureToGraphic({
       externalId: id,
       ...attributes,
     },
-    geometry:
-      typeof geometry === 'string'
-        ? jsonUtils.fromJSON(geojsonToArcGIS(wktToGeoJSON(geometry)))
-        : geometry,
+    geometry: typeof geometry === 'string' ? wktToArcGIS(geometry) : geometry,
     symbol,
   })
 }

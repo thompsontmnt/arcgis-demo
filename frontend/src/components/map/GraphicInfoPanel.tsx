@@ -1,23 +1,29 @@
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { Box } from '@radix-ui/themes'
 import { useAtomValue } from 'jotai'
 
 import { createModeAtom, draftGraphicAtom, selectedGraphicsAtom } from './atoms'
 import { CreateGraphicForm } from './CreateGraphicForm'
 import { SelectedGraphicPanel } from './SelectedGraphicPanel'
+import { Panel } from '../ui/Panel'
 
 export function GraphicInfoPanel() {
-  const draftGraphic = useAtomValue(draftGraphicAtom)
   const isCreating = useAtomValue(createModeAtom)
+  const draftGraphic = useAtomValue(draftGraphicAtom)
   const selected = useAtomValue(selectedGraphicsAtom)
-  console.log('GraphicInfoPanel render', { isCreating, draftGraphic, selected })
 
-  if (isCreating && draftGraphic) {
-    return <CreateGraphicForm graphic={draftGraphic} />
-  }
+  const visible = isCreating || draftGraphic !== null || selected.length > 0
 
-  if (selected.length > 0) {
-    return <SelectedGraphicPanel graphics={selected} />
-  }
+  return (
+    <Panel
+      className={`absolute top-2 right-2 w-[300px] ${visible ? '' : 'hidden'}`}
+    >
+      <Box className={isCreating && draftGraphic ? 'block' : 'hidden'}>
+        {draftGraphic && <CreateGraphicForm graphic={draftGraphic} />}
+      </Box>
 
-  return <VisuallyHidden>No graphic selected</VisuallyHidden>
+      <Box className={!isCreating && selected.length > 0 ? 'block' : 'hidden'}>
+        <SelectedGraphicPanel graphics={selected} />
+      </Box>
+    </Panel>
+  )
 }
