@@ -1,12 +1,15 @@
 import { Theme } from '@radix-ui/themes'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { Provider as JotaiProvider } from 'jotai'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
+import { Toaster } from 'sonner'
 
 import { jotaiStore } from './jotai/jotaiStore.ts'
 import reportWebVitals from './reportWebVitals.ts'
 import { routeTree } from './routeTree.gen'
+
 import './styles.css'
 import '@radix-ui/themes/styles.css'
 
@@ -26,6 +29,7 @@ declare module '@tanstack/react-router' {
     router: typeof router
   }
 }
+const queryClient = new QueryClient()
 
 // Render the app
 const rootElement = document.getElementById('app')
@@ -33,10 +37,13 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <Theme appearance="dark" grayColor="slate">
+      <Toaster richColors position="top-center" />
       <StrictMode>
-        <JotaiProvider store={jotaiStore}>
-          <RouterProvider router={router} />
-        </JotaiProvider>
+        <QueryClientProvider client={queryClient}>
+          <JotaiProvider store={jotaiStore}>
+            <RouterProvider router={router} />
+          </JotaiProvider>
+        </QueryClientProvider>
       </StrictMode>
     </Theme>,
   )

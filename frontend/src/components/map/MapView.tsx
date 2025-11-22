@@ -1,4 +1,3 @@
-import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer'
 import SketchViewModel from '@arcgis/core/widgets/Sketch/SketchViewModel'
 import { Box } from '@radix-ui/themes'
 import { useSetAtom } from 'jotai'
@@ -13,30 +12,70 @@ import Toolbar from './Toolbar'
 import AddressSearch from '../ui/controls/AddressSearch'
 
 import type { ArcgisMapCustomEvent } from '@arcgis/map-components'
+import { listGeometriesGeometryGetOptions } from '@/api/client/@tanstack/react-query.gen'
+import { useQuery } from '@tanstack/react-query'
+import { convertFeatureToGraphic } from './utils/convertFeatureToGraphic'
+import { useGraphicsLayer } from '@/hooks/useGraphicsLayer'
+import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol'
+import Color from '@arcgis/core/Color'
 
 export default function MapView() {
   const setViewAtom = useSetAtom(viewAtom)
-
   const setGraphicsLayer = useSetAtom(graphicsLayerAtom)
   const setSketchVM = useSetAtom(sketchVMAtom)
 
-  const handleReady = useCallback((e: ArcgisMapCustomEvent<void>) => {
-    const map = e.target
-    const view = map.view
+  const { data: geometries } = useQuery(listGeometriesGeometryGetOptions())
 
-    setViewAtom(view)
+  const simpleFillSymbol = new SimpleFillSymbol({
+    color: new Color([51, 102, 204, 0.3]),
+    outline: {
+      type: 'simple-line',
+      color: new Color([51, 102, 204, 1]),
+      width: 2,
+    },
+    style: 'solid',
+  })
 
-    const layer = new GraphicsLayer({ id: 'global-graphics' })
-    view.map?.add(layer)
-    setGraphicsLayer(layer)
+  const graphics = Array.isArray(geometries)
+    ? geometries.map((geom) =>
+        convertFeatureToGraphic({
+          id: geom.id?.toString(),
+          geometry: geom.wkt,
+          attributes: { label: geom.label },
+          symbol: simpleFillSymbol,
+        }),
+      )
+    : []
 
-    const sketch = new SketchViewModel({
-      view,
-      layer,
-      defaultUpdateOptions: { tool: 'reshape', toggleToolOnClick: false },
-    })
-    setSketchVM(sketch)
-  }, [])
+  const { layer } = useGraphicsLayer({
+    view: null,
+    id: 'global-graphics',
+    title: 'Global Graphics',
+    graphics,
+  })
+
+  const handleReady = useCallback(
+    (e: ArcgisMapCustomEvent<void>) => {
+      const map = e.target
+      const view = map.view
+
+      setViewAtom(view)
+
+      // Add layer to map if not already present
+      if (view.map && !view.map.layers.includes(layer)) {
+        view.map.add(layer)
+      }
+      setGraphicsLayer(layer)
+
+      const sketch = new SketchViewModel({
+        view,
+        layer,
+        defaultUpdateOptions: { tool: 'reshape', toggleToolOnClick: false },
+      })
+      setSketchVM(sketch)
+    },
+    [layer, setGraphicsLayer, setSketchVM, setViewAtom],
+  )
 
   return (
     <arcgis-map
