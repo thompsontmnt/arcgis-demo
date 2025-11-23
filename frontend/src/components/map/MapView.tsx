@@ -1,7 +1,7 @@
 import SketchViewModel from '@arcgis/core/widgets/Sketch/SketchViewModel'
 import { Box } from '@radix-ui/themes'
 import { useQuery } from '@tanstack/react-query'
-import { useSetAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { useCallback, useMemo } from 'react'
 import '@arcgis/map-components/components/arcgis-map'
 import '@arcgis/map-components/components/arcgis-placement'
@@ -11,6 +11,7 @@ import { listGeometriesGeometryGetOptions } from '@/api/client/@tanstack/react-q
 import { useGraphicsLayer } from '@/hooks/useGraphicsLayer'
 
 import { graphicsLayerAtom, sketchVMAtom, viewAtom } from './atoms'
+import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants'
 import { GraphicInfoPanel } from './GraphicInfoPanel'
 import Toolbar from './Toolbar'
 import { convertFeatureToGraphic } from './utils/convertFeatureToGraphic'
@@ -20,9 +21,9 @@ import AddressSearch from '../ui/controls/AddressSearch'
 import type { ArcgisMapCustomEvent } from '@arcgis/map-components'
 
 export default function MapView() {
-  const setViewAtom = useSetAtom(viewAtom)
+  const [view, setView] = useAtom(viewAtom)
   const setGraphicsLayer = useSetAtom(graphicsLayerAtom)
-  const setSketchVM = useSetAtom(sketchVMAtom)
+  const [sketch, setSketchVM] = useAtom(sketchVMAtom)
 
   const { data: geometries } = useQuery(listGeometriesGeometryGetOptions())
 
@@ -39,7 +40,7 @@ export default function MapView() {
   }, [geometries])
 
   const { layer } = useGraphicsLayer({
-    view: null,
+    view,
     id: 'global-graphics',
     title: 'Global Graphics',
     graphics,
@@ -47,47 +48,39 @@ export default function MapView() {
 
   const handleReady = useCallback(
     (e: ArcgisMapCustomEvent<void>) => {
+      if (view) return
+
       const map = e.target
-      const view = map.view
+      const nextView = map.view
 
-      setViewAtom(view)
+      nextView.goTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
 
-      // Add layer to map if not already present
-      if (view.map && !view.map.layers.includes(layer)) {
-        view.map.add(layer)
-      }
+      setView(nextView)
       setGraphicsLayer(layer)
 
-      const sketch = new SketchViewModel({
-        view,
-        layer,
-        defaultUpdateOptions: { tool: 'reshape', toggleToolOnClick: false },
-      })
-      setSketchVM(sketch)
+      if (!sketch) {
+        const vm = new SketchViewModel({
+          view: nextView,
+          layer,
+          defaultUpdateOptions: { tool: 'reshape', toggleToolOnClick: false },
+        })
+        setSketchVM(vm)
+      }
     },
-    [layer, setGraphicsLayer, setSketchVM, setViewAtom],
+    [layer, sketch, setSketchVM, setView],
   )
 
   return (
-    <arcgis-map
-      basemap="satellite"
-      zoom={4}
-      center={[-98.5795, 39.8283]}
-      onarcgisViewReadyChange={handleReady}
-    >
+    <arcgis-map basemap="satellite" onarcgisViewReadyChange={handleReady}>
       <arcgis-placement slot="top-left">
         <AddressSearch />
       </arcgis-placement>
+
       <arcgis-placement slot="top-right">
         <GraphicInfoPanel />
       </arcgis-placement>
 
-      <Box
-        position="absolute"
-        bottom="5"
-        left="50%"
-        style={{ transform: 'translateX(-50%)' }}
-      >
+      <Box position="absolute" bottom="5" className="left-1/2 -translate-x-1/2">
         <Toolbar />
       </Box>
     </arcgis-map>

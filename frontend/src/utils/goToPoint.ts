@@ -42,8 +42,6 @@ export async function goToPoint(point: Point) {
     await view.when()
     await waitForViewReady(view)
 
-    layer.removeAll()
-
     const marker = new Graphic({
       geometry: point,
       symbol: {
