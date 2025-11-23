@@ -8,10 +8,11 @@ import '@arcgis/map-components/components/arcgis-placement'
 import '@arcgis/map-components'
 
 import { listGeometriesGeometryGetOptions } from '@/api/client/@tanstack/react-query.gen'
+import { useDeleteSelectedGeometry } from '@/hooks/useDeleteGeometry'
 import { useGraphicsLayer } from '@/hooks/useGraphicsLayer'
 
 import { graphicsLayerAtom, sketchVMAtom, viewAtom } from './atoms'
-import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants'
+import { DEFAULT_CENTER, DEFAULT_ZOOM, MINIMUM_MAP_ZOOM } from './constants'
 import { GraphicInfoPanel } from './GraphicInfoPanel'
 import Toolbar from './Toolbar'
 import { convertFeatureToGraphic } from './utils/convertFeatureToGraphic'
@@ -26,14 +27,15 @@ export default function MapView() {
   const [sketch, setSketchVM] = useAtom(sketchVMAtom)
 
   const { data: geometries } = useQuery(listGeometriesGeometryGetOptions())
+  const deleteModal = useDeleteSelectedGeometry()
 
   const graphics = useMemo(() => {
     if (!Array.isArray(geometries)) return []
-    return geometries.map(({ id, wkt, label }) =>
+    return geometries.map((geometry) =>
       convertFeatureToGraphic({
-        id: id.toString(),
-        geometry: wkt,
-        attributes: { label },
+        id: geometry.id.toString(),
+        geometry: geometry.wkt,
+        attributes: { ...geometry },
         symbol: simpleFillSymbol,
       }),
     )
@@ -57,12 +59,15 @@ export default function MapView() {
 
       setView(nextView)
       setGraphicsLayer(layer)
+      map.view.constraints = {
+        minZoom: MINIMUM_MAP_ZOOM,
+      }
 
       if (!sketch) {
         const vm = new SketchViewModel({
           view: nextView,
           layer,
-          defaultUpdateOptions: { tool: 'reshape', toggleToolOnClick: false },
+          defaultUpdateOptions: { tool: 'reshape' },
         })
         setSketchVM(vm)
       }
@@ -71,18 +76,25 @@ export default function MapView() {
   )
 
   return (
-    <arcgis-map basemap="satellite" onarcgisViewReadyChange={handleReady}>
-      <arcgis-placement slot="top-left">
-        <AddressSearch />
-      </arcgis-placement>
+    <>
+      <arcgis-map basemap="satellite" onarcgisViewReadyChange={handleReady}>
+        <arcgis-placement slot="top-left">
+          <AddressSearch />
+        </arcgis-placement>
 
-      <arcgis-placement slot="top-right">
-        <GraphicInfoPanel />
-      </arcgis-placement>
+        <arcgis-placement slot="top-right">
+          <GraphicInfoPanel />
+        </arcgis-placement>
 
-      <Box position="absolute" bottom="5" className="left-1/2 -translate-x-1/2">
-        <Toolbar />
-      </Box>
-    </arcgis-map>
+        <Box
+          position="absolute"
+          bottom="5"
+          className="left-1/2 -translate-x-1/2"
+        >
+          <Toolbar />
+        </Box>
+      </arcgis-map>
+      {deleteModal}
+    </>
   )
 }
