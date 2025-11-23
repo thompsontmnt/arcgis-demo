@@ -1,32 +1,29 @@
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { Flex, Separator, Text } from '@radix-ui/themes'
+import { Box } from '@radix-ui/themes'
 import { useAtomValue } from 'jotai'
 
-import { selectedGraphicsAtom } from './atoms'
+import { createModeAtom, draftGraphicAtom, selectedGraphicsAtom } from './atoms'
+import { CreateGraphicForm } from './CreateGraphicForm'
+import { SelectedGraphicPanel } from './SelectedGraphicPanel'
 import { Panel } from '../ui/Panel'
 
 export function GraphicInfoPanel() {
-  const graphics = useAtomValue(selectedGraphicsAtom)
+  const isCreating = useAtomValue(createModeAtom)
+  const draftGraphic = useAtomValue(draftGraphicAtom)
+  const selected = useAtomValue(selectedGraphicsAtom)
 
-  const isEmpty = graphics.length === 0
+  const visible = isCreating || draftGraphic !== null || selected.length > 0
 
   return (
-    <div>
-      {isEmpty && <VisuallyHidden>Empty</VisuallyHidden>}
+    <Panel
+      className={`absolute top-2 right-2 w-[300px] ${visible ? '' : 'hidden'}`}
+    >
+      <Box className={isCreating && draftGraphic ? 'block' : 'hidden'}>
+        {draftGraphic && <CreateGraphicForm graphic={draftGraphic} />}
+      </Box>
 
-      {!isEmpty && (
-        <Panel>
-          <Text size="4">Selected Graphic</Text>
-
-          {graphics.map((graphic, i) => (
-            <Flex key={i} direction="column" gap="2">
-              <Text>Type: {graphic.geometry?.type}</Text>
-              <Text>{JSON.stringify(graphic.attributes, null, 2)}</Text>
-              <Separator size="2" />
-            </Flex>
-          ))}
-        </Panel>
-      )}
-    </div>
+      <Box className={!isCreating && selected.length > 0 ? 'block' : 'hidden'}>
+        <SelectedGraphicPanel graphics={selected} />
+      </Box>
+    </Panel>
   )
 }

@@ -5,6 +5,7 @@ import prettierConfig from 'eslint-config-prettier'
 const customConfig = [
   ...tanstackConfig,
   {
+    ignores: ['src/api/**'],
     rules: {
       'import/order': [
         'error',
