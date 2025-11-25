@@ -1,6 +1,6 @@
 import { AlertDialog, Box, Button, Flex } from '@radix-ui/themes'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useEventListener } from 'usehooks-ts'
@@ -9,10 +9,11 @@ import {
   deleteGeometryGeometryGeomIdDeleteMutation,
   listGeometriesGeometryGetOptions,
 } from '@/api/client/@tanstack/react-query.gen'
-import { selectedGraphicsAtom } from '@/components/map/atoms'
+import { selectedGraphicsAtom, updateModeAtom } from '@/components/map/atoms'
 
 export function useDeleteSelectedGeometry() {
   const [selectedGraphics, setSelectedGraphics] = useAtom(selectedGraphicsAtom)
+  const setUpdateMode = useSetAtom(updateModeAtom)
   const [open, setOpen] = useState(false)
   const qc = useQueryClient()
 
@@ -22,6 +23,7 @@ export function useDeleteSelectedGeometry() {
       toast.success('Graphic deleted')
       qc.invalidateQueries(listGeometriesGeometryGetOptions())
       setSelectedGraphics([])
+      setUpdateMode(false)
       setOpen(false)
     },
     onError: () => {

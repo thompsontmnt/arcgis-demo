@@ -13,7 +13,6 @@ import { routeTree } from './routeTree.gen'
 import './styles.css'
 import '@radix-ui/themes/styles.css'
 
-// Create a new router instance
 const router = createRouter({
   routeTree,
   context: {},
@@ -23,7 +22,6 @@ const router = createRouter({
   defaultPreloadStaleTime: 0,
 })
 
-// Register the router instance for type safety
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
@@ -31,12 +29,11 @@ declare module '@tanstack/react-router' {
 }
 const queryClient = new QueryClient()
 
-// Render the app
 const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
-    <Theme appearance="dark" grayColor="slate">
+    <Theme appearance="dark" grayColor="slate" panelBackground="translucent">
       <Toaster richColors position="top-center" />
       <StrictMode>
         <QueryClientProvider client={queryClient}>

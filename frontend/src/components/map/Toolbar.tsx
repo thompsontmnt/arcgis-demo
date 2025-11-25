@@ -1,4 +1,4 @@
-import { Flex, IconButton, Separator, Tooltip } from '@radix-ui/themes'
+import { Flex, IconButton, Separator } from '@radix-ui/themes'
 import { useAtom } from 'jotai'
 import { CrosshairIcon, MousePointerIcon, PencilLineIcon } from 'lucide-react'
 
@@ -15,44 +15,41 @@ export default function Toolbar() {
   return (
     <Panel className="w-[fit-content] p-2">
       <Flex gap="4" justify="center" px="2" align="center">
-        <Tooltip content="Select tool" side="top" delayDuration={500}>
-          <IconButton
-            size="1"
-            variant={activeTool === 'select' ? 'solid' : 'ghost'}
-            onClick={() => setActiveTool('select')}
-            aria-label="Select tool"
-            highContrast
-          >
-            <MousePointerIcon className="w-4 h-4" />
-          </IconButton>
-        </Tooltip>
-        <Tooltip content="Draw polygon" side="top" delayDuration={500}>
-          <IconButton
-            size="1"
-            variant={activeTool === 'draw-polygon' ? 'solid' : 'ghost'}
-            onClick={() => setActiveTool('draw-polygon')}
-            aria-label="Draw polygon tool"
-            highContrast
-          >
-            <PencilLineIcon className="w-4 h-4" />
-          </IconButton>
-        </Tooltip>
+        <IconButton
+          size="1"
+          variant={activeTool === 'select' ? 'solid' : 'ghost'}
+          onClick={() => setActiveTool('select')}
+          aria-label="Select tool"
+          title="Select tool"
+          highContrast
+        >
+          <MousePointerIcon className="w-4 h-4" />
+        </IconButton>
+        <IconButton
+          size="1"
+          variant={activeTool === 'draw-polygon' ? 'solid' : 'ghost'}
+          onClick={() => setActiveTool('draw-polygon')}
+          aria-label="Draw polygon tool"
+          title="Draw polygon"
+          highContrast
+        >
+          <PencilLineIcon className="w-4 h-4" />
+        </IconButton>
         <Separator orientation="vertical" />
-        <Tooltip content="Re-center map" side="top" delayDuration={500}>
-          <IconButton
-            size="1"
-            variant="ghost"
-            onClick={() => {
-              if (view) {
-                view.goTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
-              }
-            }}
-            aria-label="Re-center map"
-            highContrast
-          >
-            <CrosshairIcon className="w-4 h-4" />
-          </IconButton>
-        </Tooltip>
+        <IconButton
+          size="1"
+          variant="ghost"
+          onClick={() => {
+            if (view) {
+              view.goTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
+            }
+          }}
+          aria-label="Re-center map"
+          title="Re-center map"
+          highContrast
+        >
+          <CrosshairIcon className="w-4 h-4" />
+        </IconButton>
       </Flex>
     </Panel>
   )

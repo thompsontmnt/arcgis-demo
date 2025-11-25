@@ -1,4 +1,5 @@
-import { Card } from '@/components/ui/card'
+import { Card } from '@radix-ui/themes'
+
 import { cn } from '@/lib/utils'
 
 interface PanelProps {
@@ -7,15 +8,5 @@ interface PanelProps {
 }
 
 export function Panel({ children, className }: PanelProps) {
-  return (
-    <Card
-      className={cn(
-        'p-3 shadow-lg border rounded-lg bg-[--color-overlay] backdrop-blur',
-        'z-50 w-[360px]',
-        className,
-      )}
-    >
-      {children}
-    </Card>
-  )
+  return <Card className={cn(' w-[360px] panel', className)}>{children}</Card>
 }
