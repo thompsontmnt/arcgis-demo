@@ -20,6 +20,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.panel {
+  background-color: rgba(23, 29, 47, 0.75);
+}
+
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
@@ -140,11 +144,4 @@ code {
   body {
     @apply bg-background text-foreground;
   }
-}
-
-.bg-\[--color-overlay\] {
-  background-color: var(
-    --color-overlay,
-    rgba(0, 0, 0, 0.5)
-  ); /* Fallback to black */
 }

@@ -1,4 +1,4 @@
-import { Flex, IconButton, Spinner, Text } from '@radix-ui/themes'
+import { Flex, IconButton, ScrollArea, Spinner, Text } from '@radix-ui/themes'
 import { useQuery } from '@tanstack/react-query'
 import { useAtomValue, useSetAtom } from 'jotai'
 import { ChevronDownIcon, ChevronUpIcon, LocateIcon } from 'lucide-react'
@@ -12,7 +12,7 @@ import {
 import { graphicsByIdAtom, selectedGraphicsAtom } from './atoms'
 import { viewAtom } from '../map/atoms'
 import { Panel } from '../ui/Panel'
-import { WktPolygonSvg } from './utils/wktToPolygonSvg'
+import { WktPolygonSvg } from './utils/WktToPolygonSvg'
 
 export function GraphicsListPanel() {
   const [collapsed, setCollapsed] = useState(false)
@@ -48,48 +48,47 @@ export function GraphicsListPanel() {
           )}
         </IconButton>
       </Flex>
-
       {!collapsed && (
-        <Flex direction="column" gap="2" mt="3">
-          {data.map((item) => {
-            const graphic = graphicsById[item.id]
-
-            return (
-              <Flex
-                key={item.id}
-                justify="between"
-                align="center"
-                className="p-2 rounded hover:backdrop-blur-lg cursor-pointer"
-                onClick={() => {
-                  setSelected([graphic])
-                }}
-                role="listitem"
-              >
-                <Flex direction="row" gap="2" align="center">
-                  <WktPolygonSvg wkt={item.wkt} />
-                  <Text size="1" color="gray">
-                    ID: {item.id}
-                  </Text>
-                  <Text weight="medium">{item.label}</Text>
-                </Flex>
-
-                <IconButton
-                  size="1"
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (view) {
-                      view.goTo(graphic)
-                    }
+        <ScrollArea style={{ maxHeight: 600, width: '100%' }}>
+          <Flex direction="column" gap="2" mt="3">
+            {data.map((item) => {
+              const graphic = graphicsById[item.id]
+              return (
+                <Flex
+                  key={item.id}
+                  justify="between"
+                  align="center"
+                  className="p-2 mr-2 rounded hover:bg-gray-600 cursor-pointer"
+                  onClick={() => {
+                    setSelected([graphic])
                   }}
-                  title="Zoom to"
+                  role="listitem"
                 >
-                  <LocateIcon size="16" />
-                </IconButton>
-              </Flex>
-            )
-          })}
-        </Flex>
+                  <Flex direction="row" gap="2" align="center">
+                    <WktPolygonSvg wkt={item.wkt} />
+                    <Text size="1" color="gray">
+                      ID: {item.id}
+                    </Text>
+                    <Text>{item.label}</Text>
+                  </Flex>
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    onClick={() => {
+                      if (view) {
+                        view.goTo(graphic)
+                      }
+                    }}
+                    title="Zoom to"
+                    highContrast
+                  >
+                    <LocateIcon size="16" />
+                  </IconButton>
+                </Flex>
+              )
+            })}
+          </Flex>
+        </ScrollArea>
       )}
     </Panel>
   )
