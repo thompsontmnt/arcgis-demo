@@ -8,7 +8,7 @@ export type JsonValue =
   | string
   | number
   | boolean
-  | Array<JsonValue>
+  | JsonValue[]
   | { [key: string]: JsonValue }
 
 /**
@@ -53,7 +53,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   if (value === null || typeof value !== 'object') {
     return false
   }
-  const prototype = Object.getPrototypeOf(value)
+  const prototype = Object.getPrototypeOf(value as object)
   return prototype === Object.prototype || prototype === null
 }
 
@@ -74,7 +74,7 @@ const serializeSearchParams = (params: URLSearchParams): JsonValue => {
     }
 
     if (Array.isArray(existing)) {
-      ;(existing as Array<string>).push(value)
+      ;(existing as string[]).push(value)
     } else {
       result[key] = [existing, value]
     }

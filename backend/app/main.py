@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+
+app = FastAPI(openapi_version="3.0.0")
+
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.geometry import router as geometry_router
