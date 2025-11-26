@@ -15,6 +15,9 @@ export default function AddressSearch() {
     loading,
     selectSuggestion,
     submit,
+    highlightedIndex,
+    setHighlightedIndex,
+    handleKeyDown,
   } = useAddressSearch(async (result) => {
     if (!result.location) return
 
@@ -38,7 +41,7 @@ export default function AddressSearch() {
           placeholder="Search address…"
           onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={(e) => {
-            e.key === 'Enter' && submit()
+            handleKeyDown(e)
             e.stopPropagation()
           }}
           className="w-full truncate"
@@ -69,8 +72,9 @@ export default function AddressSearch() {
               key={i}
               px="3"
               py="2"
-              className="cursor-pointer hover:bg-gray-600"
+              className={`cursor-pointer hover:bg-gray-600${i === highlightedIndex ? ' bg-gray-600' : ''}`}
               onClick={() => selectSuggestion(s)}
+              onMouseEnter={() => setHighlightedIndex(i)}
             >
               {s.text}
             </Box>

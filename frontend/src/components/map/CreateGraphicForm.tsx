@@ -81,6 +81,15 @@ export function CreateGraphicForm({ graphic }: CreateGraphicFormProps) {
       }
     }
   }
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      if (label && !createGeometry.isPending) {
+        handleSave()
+      }
+    } else if (e.key === 'Escape') {
+      handleCancel()
+    }
+  }
 
   return (
     <Box>
@@ -92,7 +101,9 @@ export function CreateGraphicForm({ graphic }: CreateGraphicFormProps) {
         value={label}
         placeholder="Label"
         onChange={(e) => setLabel(e.target.value)}
+        onKeyDown={handleInputKeyDown}
         mt="3"
+        autoFocus
       />
 
       <Box mt="3">

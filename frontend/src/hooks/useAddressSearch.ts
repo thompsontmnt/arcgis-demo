@@ -16,6 +16,7 @@ export function useAddressSearch(
   const [suggestions, setSuggestions] = useState<Array<Suggestion>>([])
   const [loading, setLoading] = useState(false)
   const [suppressSuggestions, setSuppressSuggestions] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -25,16 +26,15 @@ export function useAddressSearch(
     setSuppressSuggestions(false)
   }
 
-  //
-  // AUTOCOMPLETE SUGGESTIONS
-  //
   useEffect(() => {
     if (suppressSuggestions) {
       setSuggestions([])
+      setHighlightedIndex(-1)
       return
     }
     if (!query.trim()) {
       setSuggestions([])
+      setHighlightedIndex(-1)
       return
     }
 
@@ -57,14 +57,14 @@ export function useAddressSearch(
         // avoid race conditions
         if (savedQuery !== query) return
 
-        setSuggestions(
-          results
-            .filter((s: any) => typeof s.text === 'string' && !!s.text)
-            .map((s: any) => ({
-              text: s.text,
-              magicKey: s.magicKey,
-            })),
-        )
+        const filtered = results
+          .filter((s: any) => typeof s.text === 'string' && !!s.text)
+          .map((s: any) => ({
+            text: s.text,
+            magicKey: s.magicKey,
+          }))
+        setSuggestions(filtered)
+        setHighlightedIndex(filtered.length > 0 ? 0 : -1)
       } catch (err: any) {
         if (err.name !== 'AbortError') {
           console.warn('suggest error:', err)
@@ -78,17 +78,15 @@ export function useAddressSearch(
     }
   }, [query, suppressSuggestions])
 
-  //
-  // USER SELECTS A SUGGESTION
-  //
   const selectSuggestion = useCallback(
     async (sug: Suggestion) => {
-      abortRef.current?.abort() // ← important fix
+      abortRef.current?.abort()
 
       setQuery(sug.text)
       setSuppressSuggestions(true)
       setSuggestions([])
       setLoading(true)
+      setHighlightedIndex(-1)
 
       try {
         const results = await locator.addressToLocations(GEOCODER_URL, {
@@ -109,17 +107,15 @@ export function useAddressSearch(
     [onResult],
   )
 
-  //
-  // USER PRESSES ENTER OR CLICKS GO
-  //
   const submit = useCallback(async () => {
     if (!query.trim()) return
 
-    abortRef.current?.abort() // ← avoid background suggestion finishing
+    abortRef.current?.abort()
 
     setLoading(true)
     setSuggestions([])
-    setSuppressSuggestions(true) // ← hides suggestions until typing again
+    setSuppressSuggestions(true)
+    setHighlightedIndex(-1)
 
     try {
       const results = await locator.addressToLocations(GEOCODER_URL, {
@@ -134,6 +130,31 @@ export function useAddressSearch(
       setLoading(false)
     }
   }, [query, onResult])
+  // Keyboard navigation handler
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (suggestions.length === 0) return
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setHighlightedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : 0,
+        )
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setHighlightedIndex((prev) =>
+          prev > 0 ? prev - 1 : suggestions.length - 1,
+        )
+      } else if (e.key === 'Enter') {
+        if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+          selectSuggestion(suggestions[highlightedIndex])
+        } else {
+          submit()
+        }
+      }
+    },
+    [suggestions, highlightedIndex, selectSuggestion, submit],
+  )
 
   return {
     query,
@@ -142,5 +163,8 @@ export function useAddressSearch(
     loading,
     selectSuggestion,
     submit,
+    highlightedIndex,
+    setHighlightedIndex,
+    handleKeyDown,
   }
 }
