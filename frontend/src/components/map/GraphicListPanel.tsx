@@ -13,6 +13,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   LocateIcon,
+  MapPinnedIcon,
   SearchIcon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -64,7 +65,17 @@ export function GraphicsListPanel({ graphics }: { graphics: Array<Graphic> }) {
 
   if (isLoading) return <Spinner />
   if (!data?.length)
-    return <Text>No records found. Use the draw tool to create a graphic</Text>
+    return (
+      <Panel>
+        <Flex p="2" direction="column" gap="2" align="center" justify="center">
+          <Text size="2">No graphics yet</Text>
+          <Text size="1" color="gray">
+            Use the draw tool to create a graphic
+          </Text>
+          <MapPinnedIcon size={64} strokeWidth={1} />
+        </Flex>
+      </Panel>
+    )
 
   return (
     <Panel>
