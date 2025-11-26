@@ -1,12 +1,11 @@
-import { Box, Flex } from '@radix-ui/themes'
+import { Box, Button, Flex, TextField } from '@radix-ui/themes'
+import { XIcon } from 'lucide-react'
 import { useMemo } from 'react'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { goToPoint } from '@/components/map/utils/goToPoint'
 import { useAddressSearch } from '@/hooks/useAddressSearch'
-import { goToPoint } from '@/utils/goToPoint'
 
-import { Panel } from '../Panel'
+import { Panel } from './Panel'
 
 export default function AddressSearch() {
   const {
@@ -20,7 +19,7 @@ export default function AddressSearch() {
     if (!result.location) return
 
     try {
-      await goToPoint(result.location) // now uses global view atom
+      await goToPoint(result.location)
     } catch (err) {
       console.error('GO TO ERROR:', err)
     }
@@ -34,7 +33,7 @@ export default function AddressSearch() {
   return (
     <Panel>
       <Flex gap="2" align="center">
-        <Input
+        <TextField.Root
           value={query}
           placeholder="Search address…"
           onChange={(e) => onQueryChange(e.target.value)}
@@ -42,10 +41,19 @@ export default function AddressSearch() {
             e.key === 'Enter' && submit()
             e.stopPropagation()
           }}
-        />
+          className="w-full truncate"
+        >
+          {query && (
+            <TextField.Slot side="right">
+              <Button variant="ghost" onClick={() => onQueryChange('')}>
+                <XIcon size="16" />
+              </Button>
+            </TextField.Slot>
+          )}
+        </TextField.Root>
 
-        <Button disabled={loading} onClick={submit}>
-          {loading ? 'Loading...' : 'Go'}
+        <Button disabled={loading} onClick={submit} highContrast>
+          Go
         </Button>
       </Flex>
 

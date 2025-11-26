@@ -13,7 +13,7 @@ export interface Feature {
   symbol?: Graphic['symbol']
 }
 
-export function convertFeatureToGraphic({
+export function createGraphicFromWkt({
   id,
   geometry,
   attributes,
