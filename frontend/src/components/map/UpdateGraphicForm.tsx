@@ -69,7 +69,7 @@ export function UpdateGraphicForm({
 
   const originalGeometry = graphic.geometry ? graphic.geometry.clone() : null
 
-  const reset = () => {
+  const handleCancel = () => {
     setLabel(graphic.attributes.label ?? '')
     if (originalGeometry) {
       graphic.geometry = originalGeometry
@@ -104,7 +104,7 @@ export function UpdateGraphicForm({
           {updateGeometry.isPending ? 'Saving…' : 'Save'}
         </Button>
 
-        <Button variant="outline" ml="2" onClick={reset}>
+        <Button variant="outline" ml="2" onClick={handleCancel}>
           Cancel
         </Button>
       </Box>

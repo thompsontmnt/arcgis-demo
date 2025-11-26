@@ -9,17 +9,20 @@ import {
   createGeometryGeometryPostMutation,
   listGeometriesGeometryGetQueryKey,
 } from '@/api/client/@tanstack/react-query.gen'
+import { useToolManager } from '@/context/ToolManagerContext'
 
 import { createModeAtom, draftGraphicAtom, sketchVMAtom } from './atoms'
 import { arcgisToWkt } from './utils/wkt-utils'
 
 import type Graphic from '@arcgis/core/Graphic'
+import type GraphicsLayer from '@arcgis/core/layers/GraphicsLayer'
 
 interface CreateGraphicFormProps {
   graphic: Graphic
 }
 
 export function CreateGraphicForm({ graphic }: CreateGraphicFormProps) {
+  const { setActiveTool } = useToolManager()
   const [label, setLabel] = useState('')
   const setDraft = useSetAtom(draftGraphicAtom)
   const setCreateMode = useSetAtom(createModeAtom)
@@ -63,6 +66,20 @@ export function CreateGraphicForm({ graphic }: CreateGraphicFormProps) {
     }
 
     createGeometry.mutate(data)
+    setActiveTool('select')
+  }
+
+  const handleCancel = () => {
+    setDraft(null)
+    setCreateMode(false)
+    setActiveTool('select')
+    if (sketchVM) {
+      sketchVM.cancel()
+      if (graphic.layer) {
+        const graphicsLayer = graphic.layer as GraphicsLayer | undefined
+        graphicsLayer?.remove(graphic)
+      }
+    }
   }
 
   return (
@@ -86,17 +103,7 @@ export function CreateGraphicForm({ graphic }: CreateGraphicFormProps) {
           {createGeometry.isPending ? 'Saving…' : 'Save'}
         </Button>
 
-        <Button
-          variant="outline"
-          ml="2"
-          onClick={() => {
-            setDraft(null)
-            setCreateMode(false)
-            if (sketchVM) {
-              sketchVM.cancel()
-            }
-          }}
-        >
+        <Button variant="outline" ml="2" onClick={handleCancel}>
           Cancel
         </Button>
       </Box>
