@@ -8,6 +8,7 @@ import {
   listGeometriesGeometryGetQueryKey,
   updateGeometryGeometryGeomIdPutMutation,
 } from '@/api/client/@tanstack/react-query.gen'
+import { triggerHintAtom } from '@/state/hintAtoms'
 
 import {
   draftGraphicAtom,
@@ -30,10 +31,12 @@ export function UpdateGraphicForm({
   const setUpdateMode = useSetAtom(updateModeAtom)
   const setSelectedGraphics = useSetAtom(selectedGraphicsAtom)
   const sketchVM = useAtom(sketchVMAtom)[0]
+  const triggerHint = useSetAtom(triggerHintAtom)
 
   useEffect(() => {
     setLabel(graphic.attributes.label ?? '')
-  }, [graphic.attributes.label])
+    triggerHint('Update the label or drag vertices to reshape.')
+  }, [graphic.attributes.label, triggerHint])
 
   const queryClient = useQueryClient()
 

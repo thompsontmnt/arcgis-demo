@@ -1,4 +1,9 @@
 import { jotaiStore } from '@/jotai/jotaiStore'
+import {
+  activeToolAtom,
+  isDrawingAtom,
+  triggerHintAtom,
+} from '@/state/hintAtoms'
 
 import {
   createModeAtom,
@@ -36,6 +41,13 @@ export function drawPolygonTool() {
       // Initiate sketch create mode
       sketch.create('polygon')
 
+      jotaiStore.set(activeToolAtom, 'draw')
+      jotaiStore.set(isDrawingAtom, true)
+      jotaiStore.set(
+        triggerHintAtom,
+        'Click to add points. Double-click to finish.',
+      )
+
       createHandle = sketch.on('create', (e) => {
         if (e.state === 'complete') {
           // Store draft graphic
@@ -46,6 +58,9 @@ export function drawPolygonTool() {
 
           // Ensure nothing persists as selected
           jotaiStore.set(selectedGraphicsAtom, [])
+          jotaiStore.set(isDrawingAtom, false)
+        } else if (e.state === 'cancel') {
+          jotaiStore.set(isDrawingAtom, false)
         }
       })
     },

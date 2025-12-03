@@ -52,6 +52,7 @@ export async function goToPoint(point: Point) {
       },
       attributes: {
         markerType: 'go-to',
+        readOnly: true,
         lon: point.longitude,
         lat: point.latitude,
       },

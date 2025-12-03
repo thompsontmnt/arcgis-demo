@@ -12,6 +12,7 @@ import { graphicsLayerAtom, viewAtom } from './atoms'
 import { DEFAULT_CENTER, DEFAULT_ZOOM, MINIMUM_MAP_ZOOM } from './constants'
 import { GraphicInfoPanel } from './GraphicInfoPanel'
 import { GraphicsListPanel } from './GraphicListPanel'
+import { HintOverlay } from './HintOverlay'
 import Toolbar from './Toolbar'
 import { createGraphicFromWkt } from './utils/createGraphicFromWkt'
 import { createGraphicsLayer } from './utils/createGraphicsLayer'
@@ -106,6 +107,7 @@ export default function MapView() {
         </Box>
       </arcgis-map>
 
+      <HintOverlay />
       {deleteModal}
     </>
   )

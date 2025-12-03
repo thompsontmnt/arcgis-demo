@@ -1,4 +1,9 @@
 import { jotaiStore } from '@/jotai/jotaiStore'
+import {
+  activeToolAtom,
+  hasSelectionAtom,
+  triggerHintAtom,
+} from '@/state/hintAtoms'
 
 import {
   graphicsLayerAtom,
@@ -40,7 +45,9 @@ export function selectTool() {
 
         const match = hit.results.find(
           (r): r is __esri.MapViewGraphicHit =>
-            'graphic' in r && r.graphic.layer?.id === layer.id,
+            'graphic' in r &&
+            r.graphic.layer?.id === layer.id &&
+            !r.graphic.attributes?.readOnly,
         )
 
         // Clear previous highlight
@@ -61,15 +68,24 @@ export function selectTool() {
 
         const match = hit.results.find(
           (r): r is __esri.MapViewGraphicHit =>
-            'graphic' in r && r.graphic.layer?.id === layer.id,
+            'graphic' in r &&
+            r.graphic.layer?.id === layer.id &&
+            !r.graphic.attributes?.readOnly,
         )
 
         if (match?.graphic) {
           jotaiStore.set(selectedGraphicsAtom, [match.graphic])
           jotaiStore.set(updateModeAtom, true)
+          jotaiStore.set(activeToolAtom, 'select')
+          jotaiStore.set(hasSelectionAtom, true)
+          jotaiStore.set(
+            triggerHintAtom,
+            'Press Delete to remove selected shape.',
+          )
         } else {
           jotaiStore.set(selectedGraphicsAtom, [])
           jotaiStore.set(updateModeAtom, false)
+          jotaiStore.set(hasSelectionAtom, false)
         }
       })
     },

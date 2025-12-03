@@ -1,8 +1,9 @@
 import { Flex, IconButton, Separator } from '@radix-ui/themes'
-import { useAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { CrosshairIcon, MousePointerIcon, PencilLineIcon } from 'lucide-react'
 
 import { useToolManager } from '@/context/ToolManagerContext'
+import { triggerHintAtom } from '@/state/hintAtoms'
 
 import { viewAtom } from './atoms'
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants'
@@ -11,6 +12,7 @@ import { Panel } from '../ui/Panel'
 export default function Toolbar() {
   const { activeTool, setActiveTool } = useToolManager()
   const [view] = useAtom(viewAtom)
+  const triggerHint = useSetAtom(triggerHintAtom)
 
   return (
     <Panel className="w-[fit-content] p-2">
@@ -42,6 +44,7 @@ export default function Toolbar() {
           onClick={() => {
             if (view) {
               view.goTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
+              triggerHint('Map reset to default view.')
             }
           }}
           aria-label="Re-center map"
