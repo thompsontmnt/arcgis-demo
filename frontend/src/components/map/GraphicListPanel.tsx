@@ -16,7 +16,7 @@ import {
   MapPinnedIcon,
   SearchIcon,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   listGeometriesGeometryGetOptions,
@@ -36,6 +36,7 @@ import type Graphic from '@arcgis/core/Graphic'
 export function GraphicsListPanel({ graphics }: { graphics: Array<Graphic> }) {
   const [collapsed, setCollapsed] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const [showLoadingMessage, setShowLoadingMessage] = useState(false)
   const view = useAtomValue(viewAtom)
   const [selected, setSelected] = useAtom(selectedGraphicsAtom)
   const sketchVM = useAtomValue(sketchVMAtom)
@@ -50,6 +51,19 @@ export function GraphicsListPanel({ graphics }: { graphics: Array<Graphic> }) {
     queryKey: listGeometriesGeometryGetQueryKey(),
   })
 
+  useEffect(() => {
+    if (!isLoading) {
+      setShowLoadingMessage(false)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setShowLoadingMessage(true)
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [isLoading])
+
   const filtered = useMemo(() => {
     if (!data) return []
     return data.filter(
@@ -63,7 +77,17 @@ export function GraphicsListPanel({ graphics }: { graphics: Array<Graphic> }) {
     if (extent && view) view.goTo(extent.expand(1.2))
   }
 
-  if (isLoading) return <Spinner />
+  if (isLoading)
+    return (
+      <Panel>
+        <Flex p="2" direction="column" gap="2" align="center" justify="center">
+          <Spinner />
+          {showLoadingMessage && (
+            <Text size="2">Spinning up the API, one sec</Text>
+          )}
+        </Flex>
+      </Panel>
+    )
   if (!data?.length)
     return (
       <Panel>
