@@ -37,7 +37,13 @@ export function useDeleteSelectedGeometry() {
       (e.key === 'Delete' || e.key === 'Backspace') &&
       selectedGraphics.length > 0
     ) {
-      setOpen(true)
+      const graphic = selectedGraphics[0]
+      if (graphic.attributes?.id) {
+        setOpen(true)
+      } else {
+        setSelectedGraphics([])
+        setUpdateMode(false)
+      }
     }
   })
 
